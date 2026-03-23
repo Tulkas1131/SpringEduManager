@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - SpringEduManager</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f5f5f5;
+        }
+        .navbar {
+            background-color: #2c3e50;
+        }
+        .navbar-brand {
+            font-weight: bold;
+            color: #fff !important;
+        }
+        .nav-link {
+            color: #ecf0f1 !important;
+        }
+        .nav-link:hover {
+            color: #fff !important;
+        }
+        .dashboard-container {
+            margin-top: 30px;
+        }
+        .welcome-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        .user-info {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+        .card {
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border: none;
+            transition: transform 0.2s;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        .card-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+        .btn-logout {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+        }
+        .btn-logout:hover {
+            background-color: #c0392b;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <!-- Barra de navegación -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <span class="navbar-brand">SpringEduManager</span>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <span class="nav-link" id="userName">Cargando...</span>
+                    </li>
+                    <li class="nav-item">
+                        <button class="btn btn-logout btn-sm" onclick="logout()">Cerrar sesión</button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenido principal -->
+    <div class="container dashboard-container">
+        <!-- Tarjeta de bienvenida -->
+        <div class="welcome-card">
+            <h1>¡Bienvenido!</h1>
+            <div class="user-info">
+                Usuario: <strong id="userEmail">Cargando...</strong>
+            </div>
+            <div class="user-info">
+                Rol: <strong id="userRole">Cargando...</strong>
+            </div>
+        </div>
+
+        <!-- Opciones principales -->
+        <div class="row">
+            <!-- Gestionar Estudiantes -->
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <div class="card-icon">👨‍🎓</div>
+                        <h5 class="card-title">Estudiantes</h5>
+                        <p class="card-text">Gestiona la lista de estudiantes del sistema</p>
+                        <a href="/estudiantes" class="btn btn-primary">Ver Estudiantes</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gestionar Cursos -->
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <div class="card-icon">📚</div>
+                        <h5 class="card-title">Cursos</h5>
+                        <p class="card-text">Gestiona la lista de cursos disponibles</p>
+                        <a href="/cursos" class="btn btn-primary">Ver Cursos</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- API REST -->
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <div class="card-icon">⚙️</div>
+                        <h5 class="card-title">API REST</h5>
+                        <p class="card-text">Accede a los endpoints REST de la aplicación</p>
+                        <button class="btn btn-primary" onclick="showApiInfo()">Ver APIs</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Información de APIs -->
+        <div id="apiInfo" style="display: none;" class="alert alert-info mt-4">
+            <h5>Endpoints REST disponibles:</h5>
+            <ul>
+                <li><strong>GET /api/estudiantes</strong> - Listar todos los estudiantes</li>
+                <li><strong>GET /api/estudiantes/{id}</strong> - Obtener estudiante por ID</li>
+                <li><strong>POST /api/estudiantes</strong> - Crear nuevo estudiante</li>
+                <li><strong>PUT /api/estudiantes/{id}</strong> - Actualizar estudiante</li>
+                <li><strong>DELETE /api/estudiantes/{id}</strong> - Eliminar estudiante</li>
+                <li><strong>GET /api/cursos</strong> - Listar todos los cursos</li>
+                <li><strong>GET /api/cursos/{id}</strong> - Obtener curso por ID</li>
+                <li><strong>POST /api/cursos</strong> - Crear nuevo curso</li>
+                <li><strong>PUT /api/cursos/{id}</strong> - Actualizar curso</li>
+                <li><strong>DELETE /api/cursos/{id}</strong> - Eliminar curso</li>
+            </ul>
+            <p><strong>Nota:</strong> Todos los endpoints requieren autenticación con JWT en el header Authorization: Bearer {token}</p>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Cargar información del usuario al iniciar la página
+        function loadUserInfo() {
+            console.log('📄 Dashboard cargado');
+            
+            const token = localStorage.getItem('token');
+            const userEmail = localStorage.getItem('userEmail');
+            const userRole = localStorage.getItem('userRole');
+
+            console.log('🔍 Verificando token en dashboard:', {
+                token: token ? '✅ presente (longitud: ' + token.length + ')' : '❌ ausente',
+                userEmail: userEmail,
+                userRole: userRole
+            });
+
+            if (!token) {
+                console.warn('⚠️ SIN TOKEN en dashboard, redirigiendo a login');
+                alert('⚠️ Sin autenticación. Redirigiendo a login...');
+                window.location.href = '/login';
+                return;
+            }
+
+            console.log('✅ Token encontrado, mostrando dashboard');
+            document.getElementById('userEmail').textContent = `Hola, ${userEmail}`;
+            document.getElementById('userRole').textContent = userRole;
+            alert('✅ Autenticado como: ' + userEmail + ' (' + userRole + ')');
+        }
+
+        // Cerrar sesión
+        function logout() {
+            console.log('🚪 Cerrando sesión');
+            localStorage.removeItem('token');
+            localStorage.removeItem('userEmail');
+            localStorage.removeItem('userRole');
+            console.log('✅ localStorage limpiado');
+            alert('✅ Sesión cerrada');
+            window.location.href = '/login';
+        }
+
+        // Mostrar/ocultar información de APIs
+        function showApiInfo() {
+            const apiInfo = document.getElementById('apiInfo');
+            apiInfo.style.display = apiInfo.style.display === 'none' ? 'block' : 'none';
+        }
+
+        // Cargar información al entrar
+        console.log('📄 Inicializando página dashboard');
+        window.addEventListener('load', loadUserInfo);
+    </script>
+</body>
+</html>
