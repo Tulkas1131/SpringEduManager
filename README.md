@@ -1,19 +1,19 @@
-# 🎓 Spring EduManager
+# 🎓 SpringEduManager
 
-**Plataforma de Gestión Educativa** desarrollada con Spring Boot 4.0.4 y Java 21. Permite administrar estudiantes y cursos con autenticación JWT y base de datos en memoria H2.
+**Plataforma Integral de Gestión Educativa** desarrollada con Spring Boot 4.0.4 y Java 21. Sistema completo para administrar estudiantes y cursos con autenticación JWT segura, base de datos en memoria H2 y API REST.
 
 ---
 
 ## ✨ Características Principales
 
-- ✅ **Autenticación JWT**: Sistema de tokens seguros para acceso sin sesión
-- ✅ **CRUD Completo**: Crear, leer, actualizar y eliminar estudiantes y cursos
-- ✅ **Control de Roles**: Restricciones por rol (USER, ADMIN)
-- ✅ **API REST**: Endpoints JSON para integración con otros sistemas
-- ✅ **Interfaz Web**: Vistas HTML con Thymeleaf y Bootstrap 5
-- ✅ **Base de Datos In-Memory**: H2 con datos pre-cargados
-- ✅ **Validación de Datos**: Email y campos requeridos
-- ✅ **Seguridad**: Spring Security con autenticación BCrypt
+- ✅ **Autenticación JWT**: Tokens seguros con localStorage, sin sesiones stateful
+- ✅ **CRUD Completo**: Crear, leer, actualizar y eliminar para estudiantes y cursos
+- ✅ **Control de Roles**: RBAC (Role-Based Access Control) - USER y ADMIN
+- ✅ **Dual Interface**: MVC (Thymeleaf) + API REST (JSON)
+- ✅ **Interfaz Responsive**: Bootstrap 5.3.0 con diseño adaptativo
+- ✅ **Base de Datos Persistente**: H2 en memoria con datos pre-cargados (data.sql)
+- ✅ **Validación Completa**: Campos requeridos, email válido, roles por endpoint
+- ✅ **Seguridad Multinivel**: Spring Security, JWT, BCrypt, CORS habilitado
 
 ---
 
@@ -88,7 +88,73 @@ o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port(s): 8080 (http
 o.s.b.SpringApplication                   : Started SpringEduManagerApplication in X.XXX seconds
 ```
 
-### 4️⃣ Acceder a la Aplicación
+---
+
+## 📦 Build y Empaquetado
+
+### Compilar sin ejecutar
+
+```bash
+mvn clean compile
+```
+
+### Generar JAR Ejecutable
+
+```bash
+mvn clean package -DskipTests
+# Resultado: target/SpringEduManager-0.0.1-SNAPSHOT.jar
+```
+
+### Generar WAR para Tomcat
+
+```bash
+mvn clean package -DskipTests
+# Resultado: target/SpringEduManager-0.0.1-SNAPSHOT.war
+# Copiar a: $CATALINA_HOME/webapps/SpringEduManager.war
+```
+
+---
+
+## 🖥️ Acceso a la Aplicación
+
+### Interfaces Disponibles
+
+**Home Pública:**
+```
+http://localhost:8080/
+```
+
+**Login:**
+```
+http://localhost:8080/login
+```
+
+**Dashboard (después de login):**
+```
+http://localhost:8080/dashboard
+```
+
+**Gestión de Estudiantes:**
+```
+http://localhost:8080/estudiantes
+```
+
+**Gestión de Cursos:**
+```
+http://localhost:8080/cursos
+```
+
+**H2 Database Console:**
+```
+http://localhost:8080/h2-console
+JDBC URL: jdbc:h2:mem:edudb
+User: sa
+Password: (vacío)
+```
+
+---
+
+## 4️⃣ Acceder a la Aplicación
 
 Abre tu navegador y ve a:
 ```
@@ -125,33 +191,37 @@ http://localhost:8080/login
 
 ## 🌐 Rutas Principales
 
-### Vistas HTML (MVC)
+### Vistas HTML (MVC) - Acceso Público (sin autenticación requerida)
 
 | Ruta | Método | Descripción |
 |------|--------|-------------|
 | `/` | GET | Página de inicio pública |
 | `/login` | GET | Formulario de login |
-| `/dashboard` | GET | Página de bienvenida autenticada |
-| `/estudiantes` | GET | Listar estudiantes |
-| `/estudiantes/nuevo` | GET | Formulario crear estudiante |
-| `/estudiantes/{id}` | GET | Formulario editar estudiante |
-| `/cursos` | GET | Listar cursos (público) |
-| `/cursos/nuevo` | GET | Crear curso (solo ADMIN) |
-| `/cursos/{id}` | GET | Editar curso (solo ADMIN) |
+| `/dashboard` | GET | Dashboard (home autenticado) |
+| `/estudiantes` | GET | Listar todos los estudiantes |
+| `/estudiantes/nuevo` | GET | Crear nuevo estudiante (form) |
+| `/estudiantes/{id}` | GET | Editar estudiante (form) |
+| `/estudiantes/eliminar/{id}` | GET | Eliminar estudiante |
+| `/cursos` | GET | Listar todos los cursos |
+| `/cursos/nuevo` | GET | Crear nuevo curso (form) |
+| `/cursos/{id}` | GET | Editar curso (form) |
+| `/cursos/eliminar/{id}` | GET | Eliminar curso |
 
-### API REST (JSON)
+**Nota**: Las operaciones POST (guardar) ocurren sin @PreAuthorize en MVC. La validación de rol se realiza en la interfaz HTML mediante localStorage.
 
-| Endpoint | Método | Descripción | Auth |
-|----------|--------|-------------|------|
-| `/api/auth/login` | POST | Obtener token JWT | ❌ |
-| `/api/estudiantes` | GET | Listar estudiantes | ✅ |
-| `/api/estudiantes` | POST | Crear estudiante | ✅ |
-| `/api/estudiantes/{id}` | GET | Obtener estudiante | ✅ |
-| `/api/estudiantes/{id}` | PUT | Actualizar estudiante | ✅ |
-| `/api/estudiantes/{id}` | DELETE | Eliminar estudiante | ✅ |
-| `/api/cursos` | GET | Listar cursos | ✅ |
+### API REST (JSON) - Requiere JWT
+
+| Endpoint | Método | Descripción | Rol |
+|----------|--------|-------------|-----|
+| `/api/auth/login` | POST | Obtener token JWT | ✖️ (Público) |
+| `/api/estudiantes` | GET | Listar estudiantes | ✅ USER |
+| `/api/estudiantes` | POST | Crear estudiante | ✅ USER |
+| `/api/estudiantes/{id}` | GET | Obtener estudiante | ✅ USER |
+| `/api/estudiantes/{id}` | PUT | Actualizar estudiante | ✅ USER |
+| `/api/estudiantes/{id}` | DELETE | Eliminar estudiante | ✅ USER |
+| `/api/cursos` | GET | Listar cursos | ✅ USER |
 | `/api/cursos` | POST | Crear curso | ✅ ADMIN |
-| `/api/cursos/{id}` | GET | Obtener curso | ✅ |
+| `/api/cursos/{id}` | GET | Obtener curso | ✅ USER |
 | `/api/cursos/{id}` | PUT | Actualizar curso | ✅ ADMIN |
 | `/api/cursos/{id}` | DELETE | Eliminar curso | ✅ ADMIN |
 
@@ -199,55 +269,77 @@ SpringEduManager/
 ├── src/
 │   ├── main/
 │   │   ├── java/com/bootcamp/SpringEduManager/
-│   │   │   ├── controller/              # Controladores MVC y REST
-│   │   │   │   ├── HomeController.java
-│   │   │   │   ├── AuthController.java
-│   │   │   │   ├── EstudianteController.java
-│   │   │   │   ├── EstudianteRestController.java
-│   │   │   │   ├── CursoController.java
-│   │   │   │   └── CursoRestController.java
-│   │   │   ├── model/                  # Entidades JPA
-│   │   │   │   ├── Estudiante.java
-│   │   │   │   └── Curso.java
-│   │   │   ├── service/                # Lógica de negocio
-│   │   │   │   ├── EstudianteService.java
-│   │   │   │   └── CursoService.java
-│   │   │   ├── repository/             # Data Access Objects
-│   │   │   │   ├── EstudianteRepository.java
-│   │   │   │   └── CursoRepository.java
-│   │   │   ├── security/               # Configuración de seguridad
-│   │   │   │   ├── SecurityConfig.java
-│   │   │   │   ├── JwtTokenProvider.java
-│   │   │   │   ├── JwtAuthenticationFilter.java
-│   │   │   │   └── JwtProperties.java
-│   │   │   ├── config/                 # Configuración
-│   │   │   │   └── JwtProperties.java
-│   │   │   ├── dto/                    # Data Transfer Objects
-│   │   │   │   ├── AuthRequest.java
-│   │   │   │   └── AuthResponse.java
-│   │   │   └── SpringEduManagerApplication.java
-│   │   ├── resources/
-│   │   │   ├── application.properties  # Configuración de la app
-│   │   │   ├── data.sql               # Datos iniciales
-│   │   │   ├── static/                # Archivos CSS, JS, imágenes
-│   │   │   └── templates/             # Vistas Thymeleaf
-│   │   │       ├── index.html
-│   │   │       ├── login.html
-│   │   │       ├── dashboard.html
-│   │   │       ├── estudiantes/
-│   │   │       │   ├── list.html
-│   │   │       │   └── form.html
-│   │   │       └── cursos/
-│   │   │           ├── list.html
-│   │   │           └── form.html
-│   └── test/                           # Tests unitarios
+│   │   │   ├── SpringEduManagerApplication.java     # Entry point
+│   │   │   │
+│   │   │   ├── controller/
+│   │   │   │   ├── HomeController.java              # Vistas públicas
+│   │   │   │   ├── AuthController.java              # Login JWT
+│   │   │   │   ├── EstudianteController.java        # CRUD MVC
+│   │   │   │   ├── EstudianteRestController.java    # API REST
+│   │   │   │   ├── CursoController.java             # CRUD MVC
+│   │   │   │   └── CursoRestController.java         # API REST
+│   │   │   │
+│   │   │   ├── model/
+│   │   │   │   ├── Estudiante.java                  # Entidad JPA
+│   │   │   │   └── Curso.java                       # Entidad JPA
+│   │   │   │
+│   │   │   ├── repository/
+│   │   │   │   ├── EstudianteRepository.java        # DAO Estudiante
+│   │   │   │   └── CursoRepository.java             # DAO Curso
+│   │   │   │
+│   │   │   ├── service/
+│   │   │   │   ├── EstudianteService.java           # Lógica negocio
+│   │   │   │   └── CursoService.java                # Lógica negocio
+│   │   │   │
+│   │   │   ├── security/
+│   │   │   │   ├── SecurityConfig.java              # Configuración Spring Security
+│   │   │   │   ├── JwtTokenProvider.java            # Generación/Validación JWT
+│   │   │   │   ├── JwtAuthenticationFilter.java     # Filtro JWT
+│   │   │   │   └── JwtProperties.java               # Propiedades JWT
+│   │   │   │
+│   │   │   ├── dto/
+│   │   │   │   ├── AuthRequest.java                 # {username, password}
+│   │   │   │   └── AuthResponse.java                # {token, role, message}
+│   │   │   │
+│   │   │   └── config/
+│   │   │       └── HttpSecurityConfig.java          # CORS y headers
+│   │   │
+│   │   └── resources/
+│   │       ├── application.properties                # Config app (puerto, JWT, BD)
+│   │       ├── data.sql                             # 5 estudiantes + 5 cursos
+│   │       ├── static/                              # CSS, JS, imágenes
+│   │       │   └── css/
+│   │       │       └── bootstrap.css
+│   │       │
+│   │       └── templates/
+│   │           ├── index.html                       # Home público
+│   │           ├── login.html                       # Login (fetch JWT)
+│   │           ├── dashboard.html                   # Home autenticado
+│   │           │
+│   │           ├── estudiantes/
+│   │           │   ├── list.html                    # Tabla estudiantes
+│   │           │   └── form.html                    # Crear/Editar
+│   │           │
+│   │           └── cursos/
+│   │               ├── list.html                    # Tabla cursos
+│   │               └── form.html                    # Crear/Editar
+│   │
+│   └── test/
 │       └── java/com/bootcamp/SpringEduManager/
 │           └── SpringEduManagerApplicationTests.java
-├── pom.xml                             # Dependencias Maven
-├── mvnw                                # Maven Wrapper (Linux/Mac)
-├── mvnw.cmd                            # Maven Wrapper (Windows)
-├── paso_a_paso.md                      # Documentación técnica paso a paso
-├── JWT_GUIA.md                         # Guía de uso de JWT
+│
+├── target/
+│   ├── SpringEduManager-0.0.1-SNAPSHOT.war         # Archivo WAR compilado
+│   ├── SpringEduManager-0.0.1-SNAPSHOT.jar.original
+│   └── classes/                                     # .class compilados
+│
+├── pom.xml                                          # Dependencias Maven
+├── mvnw                                             # Maven Wrapper (Linux/Mac)
+├── mvnw.cmd                                         # Maven Wrapper (Windows)
+├── README.md                                        # Este archivo
+├── JWT_GUIA.md                                      # Guía JWT avanzada
+└── HELP.md                                          # Generado por Spring
+```
 └── README.md                           # Este archivo
 ```
 
@@ -434,19 +526,43 @@ Verificar que `spring.jpa.defer-datasource-initialization=true` está en `applic
 
 ## 🚢 Despliegue
 
+### Generar Distributable
+
+**JAR (Standalone):**
+```bash
+mvn clean package -DskipTests
+java -jar target/SpringEduManager-0.0.1-SNAPSHOT.jar
+```
+
+**WAR (Servidor Tomcat):**
+```bash
+mvn clean package -DskipTests
+# Copiar SpringEduManager-0.0.1-SNAPSHOT.war a $CATALINA_HOME/webapps/
+```
+
 ### Docker
 
 ```dockerfile
-FROM openjdk:21
+# Dockerfile
+FROM openjdk:21-slim
 COPY target/SpringEduManager-0.0.1-SNAPSHOT.jar app.jar
 ENTRYPOINT ["java","-jar","/app.jar"]
 ```
 
-### Maven Build
+```bash
+# Construir imagen
+docker build -t springedumanager:latest .
+
+# Ejecutar contenedor
+docker run -p 8080:8080 springedumanager:latest
+```
+
+### Variables de Entorno
 
 ```bash
-mvn clean package
-java -jar target/SpringEduManager-0.0.1-SNAPSHOT.jar
+java -Djwt.secret=TuClaveSegura \
+     -Djwt.expiration=86400000 \
+     -jar target/SpringEduManager-0.0.1-SNAPSHOT.jar
 ```
 
 ---
@@ -469,9 +585,23 @@ Este proyecto está bajo licencia **MIT**. Consulta el archivo [LICENSE](LICENSE
 
 ---
 
-## 📞 Soporte
+## 📞 Soporte y Community
 
-Para reportar bugs o solicitar features, abre un [Issue](https://github.com/tu-usuario/SpringEduManager/issues).
+Para reportar bugs, solicitar features o hacer preguntas:
+
+- **Issues**: [GitHub Issues](https://github.com/Tulkas1131/SpringEduManager/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/Tulkas1131/SpringEduManager/discussions)
+- **Email**: Contacto a través del perfil de GitHub
+
+---
+
+## 🔗 Enlaces Útiles
+
+- **Repositorio**: https://github.com/Tulkas1131/SpringEduManager
+- **Spring Boot Docs**: https://spring.io/projects/spring-boot
+- **Spring Security**: https://spring.io/projects/spring-security
+- **JWT Info**: https://jwt.io
+- **H2 Database**: http://h2database.com
 
 ---
 
